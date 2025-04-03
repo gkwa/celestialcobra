@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gkwa/celestialcobra/aws"
@@ -22,20 +23,20 @@ func init() {
 		Use:   "category [category name]",
 		Short: "Query DynamoDB by category",
 		Long:  `Query DynamoDB by category with optional age parameter and domain filter.`,
-		Args:  cobra.ExactArgs(1),
+		// Changed from ExactArgs(1) to MinimumNArgs(1) to allow multiple args
+		Args:  cobra.MinimumNArgs(1),
 		RunE:  runCategoryCmd,
 	}
-
 	categoryCmd.Flags().StringVar(&tableName, "table", "dreamydungbeetle", "DynamoDB table name")
 	categoryCmd.Flags().StringVar(&ageStr, "age", "7d", "Age for query, e.g., 1h, 2d, 3w")
 	categoryCmd.Flags().StringVar(&domain, "domain", "", "Filter results by domain substring (e.g., trader will match www.traderjoes.com)")
-
 	rootCmd.AddCommand(categoryCmd)
 }
 
 func runCategoryCmd(cmd *cobra.Command, args []string) error {
-	category := args[0]
-
+	// Join all args into a single category string instead of just using the first arg
+	category := strings.Join(args, " ")
+	
 	// Parse age duration
 	duration, err := util.ParseDuration(ageStr)
 	if err != nil {
