@@ -24,8 +24,8 @@ func init() {
 		Short: "Query DynamoDB by category",
 		Long:  `Query DynamoDB by category with optional age parameter and domain filter.`,
 		// Changed from ExactArgs(1) to MinimumNArgs(1) to allow multiple args
-		Args:  cobra.MinimumNArgs(1),
-		RunE:  runCategoryCmd,
+		Args: cobra.MinimumNArgs(1),
+		RunE: runCategoryCmd,
 	}
 	categoryCmd.Flags().StringVar(&tableName, "table", "dreamydungbeetle", "DynamoDB table name")
 	categoryCmd.Flags().StringVar(&ageStr, "age", "7d", "Age for query, e.g., 1h, 2d, 3w")
@@ -36,7 +36,7 @@ func init() {
 func runCategoryCmd(cmd *cobra.Command, args []string) error {
 	// Join all args into a single category string instead of just using the first arg
 	category := strings.Join(args, " ")
-	
+
 	// Parse age duration
 	duration, err := util.ParseDuration(ageStr)
 	if err != nil {
