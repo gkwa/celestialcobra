@@ -16,6 +16,7 @@ var (
 	tableName string
 	ageStr    string
 	domain    string
+	outFile   string
 )
 
 func init() {
@@ -30,6 +31,7 @@ func init() {
 	categoryCmd.Flags().StringVar(&tableName, "table", "dreamydungbeetle", "DynamoDB table name")
 	categoryCmd.Flags().StringVar(&ageStr, "age", "7d", "Age for query, e.g., 1h, 2d, 3w")
 	categoryCmd.Flags().StringVar(&domain, "domain", "", "Filter results by domain substring (e.g., trader will match www.traderjoes.com)")
+	categoryCmd.Flags().StringVarP(&outFile, "out-file", "o", "", "File to write output to instead of stdout")
 	rootCmd.AddCommand(categoryCmd)
 }
 
@@ -59,8 +61,22 @@ func runCategoryCmd(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("query failed: %v", err)
 	}
 
-	// Output the raw response to stdout
-	if err := client.WriteRawResponse(os.Stdout, response); err != nil {
+	// Determine if we're writing to a file or stdout
+	var output *os.File
+	if outFile != "" {
+		// Create or truncate the output file
+		output, err = os.Create(outFile)
+		if err != nil {
+			return fmt.Errorf("failed to create output file: %v", err)
+		}
+		defer output.Close()
+	} else {
+		// Use stdout
+		output = os.Stdout
+	}
+
+	// Output the raw response to the appropriate writer
+	if err := client.WriteRawResponse(output, response); err != nil {
 		return fmt.Errorf("failed to write response: %v", err)
 	}
 
